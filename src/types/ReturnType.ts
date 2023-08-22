@@ -18,4 +18,16 @@ interface UserInfo {
   avatar_decoration?: string | null; // string | null - the user's avatar decoration hash - identify
 }
 
-export { UserInfo };
+interface ConnectionType {
+  id: string;
+  name: string;
+  type: string;
+  friend_sync: boolean;
+  metadata_visibility: number;
+  show_activity: boolean;
+  two_way_link: boolean;
+  verified: boolean;
+  visibility: number;
+}
+
+export { UserInfo, ConnectionType };

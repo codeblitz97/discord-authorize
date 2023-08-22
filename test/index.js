@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 app.get("/auth/login", (req, res) => {
   const url = dA.generateOauth2Link({
-    scopes: [Scopes.Identity, Scopes.Email, Scopes.Connections],
+    scopes: [Scopes.Identity, Scopes.Email],
   });
   res.redirect(url);
 });
@@ -25,15 +25,24 @@ app.get("/auth/callback", async (req, res) => {
   res.cookie("access_token", resp.accessToken);
   res.redirect("/");
 });
-
 app.get("/user/info", async (req, res) => {
   const accessToken = req.cookies.access_token;
   dA.setAccessToken(accessToken);
 
+  const userConnections = await dA.getUserConnections();
+
+  const connectionNames = userConnections.map((connection) => ({
+    name: connection.name,
+    type: connection.type,
+    verified: connection.verified,
+  }));
+
+  const userInfo = await dA.getUserInfo();
+
   res.json({
-    userName: (await dA.getUserInfo()).username,
-    email: (await dA.getUserInfo()).email,
-    connections: await dA.getUserConnections(),
+    userName: userInfo.username,
+    email: userInfo.email,
+    connections: connectionNames,
   });
 });
 
