@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 app.get("/auth/login", (req, res) => {
   const url = dA.generateOauth2Link({
-    scopes: [Scopes.Identity, Scopes.Email],
+    scopes: [Scopes.Identity, Scopes.Email, Scopes.Connections],
   });
   res.redirect(url);
 });
@@ -31,7 +31,9 @@ app.get("/user/info", async (req, res) => {
   dA.setAccessToken(accessToken);
 
   res.json({
-    userName: await dA.getUserInfo(),
+    userName: (await dA.getUserInfo()).username,
+    email: (await dA.getUserInfo()).email,
+    connections: await dA.getUserConnections(),
   });
 });
 

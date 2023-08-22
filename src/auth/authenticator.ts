@@ -1,7 +1,7 @@
 import axios from "axios";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
-import { Scopes } from "../types";
+import { Scopes, UserInfo } from "../types";
 
 class DiscordAuthorization {
   private clientId: string;
@@ -60,7 +60,7 @@ class DiscordAuthorization {
     this.accessToken = token;
   }
 
-  public async getUserInfo(): Promise<any> {
+  public async getUserInfo(): Promise<UserInfo> {
     try {
       const response = await axios.get(
         "https://discord.com/api/v10/users/@me",
@@ -77,10 +77,27 @@ class DiscordAuthorization {
     }
   }
 
+  public async getUserConnections(): Promise<any> {
+    try {
+      const response = await axios.get(
+        "https://discord.com/api/v10/users/@me/connections",
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      return response?.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch user information with error: ${error}`);
+    }
+  }
+
   async username(): Promise<string> {
     try {
       const userInfo = await this.getUserInfo();
-      return userInfo.user.username;
+      return userInfo.username;
     } catch (e: any) {
       throw new Error(e);
     }
