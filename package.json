@@ -1,0 +1,40 @@
+{
+  "name": "discord-authorize",
+  "description": "A node module for easy authentication with Discord",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codeblitz97/discord-authorize.git"
+  },
+  "keywords": [
+    "Discord",
+    "Authenticator",
+    "Auth",
+    "Discord",
+    "Auth",
+    "Node",
+    "discord-authorize",
+    "Discord",
+    "Authorize"
+  ],
+  "author": "Mohtasim Alam Sohom <mohtasimalamsohom@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codeblitz97/discord-authorize/issues"
+  },
+  "homepage": "https://github.com/codeblitz97/discord-authorize#readme",
+  "devDependencies": {
+    "@types/node": "^20.5.1",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+}
