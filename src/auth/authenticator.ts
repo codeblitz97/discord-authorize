@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
 import { Scopes, UserInfo } from "../types";
@@ -14,6 +14,35 @@ class DiscordAuthorization {
     this.clientId = options.clientId;
     this.clientSecret = options.clientSecret;
     this.redirectUri = options.redirectUri;
+  }
+
+  private async request(
+    method: string,
+    endpoint: string,
+    options: AxiosRequestConfig = {}
+  ): Promise<AxiosResponse> {
+    const headers = {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${this.accessToken}`,
+    };
+
+    const requestOptions: AxiosRequestConfig = {
+      ...options,
+      method,
+      url: `https://discord.com/api/v10${endpoint}`,
+      headers,
+    };
+
+    if (method === "GET" && options.params) {
+      requestOptions.params = options.params;
+    }
+
+    try {
+      const response = await axios.request(requestOptions);
+      return response;
+    } catch (error) {
+      throw new Error(`Request failed with error: ${error}`);
+    }
   }
 
   public generateOauth2Link({ scopes }: { scopes: Scopes[] }): string {
@@ -37,15 +66,12 @@ class DiscordAuthorization {
     });
 
     try {
-      const response = await axios.post(
-        "https://discord.com/api/oauth2/token",
-        params.toString(),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const response = await this.request("POST", "/oauth2/token", {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data: params.toString(),
+      });
 
       return {
         accessToken: response?.data.access_token,
@@ -62,15 +88,7 @@ class DiscordAuthorization {
 
   public async getUserInfo(): Promise<UserInfo> {
     try {
-      const response = await axios.get(
-        "https://discord.com/api/v10/users/@me",
-        {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        }
-      );
-
+      const response = await this.request("GET", "/users/@me");
       return response?.data;
     } catch (error) {
       throw new Error("Failed to fetch user information");
@@ -79,18 +97,10 @@ class DiscordAuthorization {
 
   public async getUserConnections(): Promise<any> {
     try {
-      const response = await axios.get(
-        "https://discord.com/api/v10/users/@me/connections",
-        {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        }
-      );
-
+      const response = await this.request("GET", "/users/@me/connections");
       return response?.data;
     } catch (error) {
-      throw new Error(`Failed to fetch user information with error: ${error}`);
+      throw new Error(`Failed to fetch user connections with error: ${error}`);
     }
   }
 
