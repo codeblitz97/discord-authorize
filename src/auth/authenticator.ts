@@ -71,21 +71,26 @@ class DiscordAuthorization {
       } else {
         throw new Error(`Status ${response.status} is not handled yet.`);
       }
-    } catch (error) {
-      throw new Error(`Request failed with error: ${error}`);
+    } catch (error: any) {
+      throw new Error(`${error.message}`);
     }
   }
 
   /**
    * Generates an OAuth2 authorization link for Discord.
    * @param {{ scopes: Scopes[] }} param0 - Authorization scopes array.
+   * @param [state="1bac472"] - Authorization state
    * @returns {string} - OAuth2 authorization link.
    */
-  public generateOauth2Link({ scopes }: { scopes: Scopes[] }): string {
+  public generateOauth2Link(
+    { scopes }: { scopes: Scopes[] },
+    state: string = "1bac472"
+  ): string {
     const params = new URLSearchParams({
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
       response_type: "code",
+      state: state,
       scope: scopes.join(" "),
     });
 
@@ -141,6 +146,40 @@ class DiscordAuthorization {
   }
 
   /**
+   * Revokes the existinga ccess token
+   */
+  async revokeToken(): Promise<void> {
+    if (!this.accessToken || !this.refreshToken) {
+      throw new Error(
+        "Access token and refresh token are required to revoke the token."
+      );
+    }
+
+    const params = new URLSearchParams();
+    params.append("client_id", this.clientId);
+    params.append("client_secret", this.clientSecret);
+    params.append("token", this.accessToken);
+
+    const config: AxiosRequestConfig = {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+
+    try {
+      await axios.post(
+        "https://discord.com/api/oauth2/token/revoke",
+        params.toString(),
+        config
+      );
+      this.accessToken = null;
+      this.refreshToken = null;
+    } catch (error) {
+      throw new Error("Failed to revoke token");
+    }
+  }
+
+  /**
    * Retrieves information about the authorized user.
    * @returns {Promise<UserInfo>} - User information.
    * @throws {Error} - If fetching user information fails.
@@ -163,8 +202,8 @@ class DiscordAuthorization {
     try {
       const response = await this.request("GET", "/users/@me/connections");
       return response?.data;
-    } catch (error) {
-      throw new Error(`Failed to fetch user connections with error: ${error}`);
+    } catch (error: any) {
+      throw new Error(error.message);
     }
   }
 
@@ -178,7 +217,7 @@ class DiscordAuthorization {
       const userInfo = await this.getUserInfo();
       return userInfo.username;
     } catch (e: any) {
-      throw new Error(e);
+      throw new Error(e.message);
     }
   }
 }
