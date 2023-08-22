@@ -1,8 +1,12 @@
-# discord-authorize
+# discord-authorize: Simplifying Discord Authentication with a Node Module
 
-A node module for easy authentication with Discord
+## Introduction
 
-## Installing
+`discord-authorize` is a powerful Node.js module that streamlines the process of authenticating users with Discord through OAuth2. This document provides a comprehensive guide on how to install, set up, and effectively utilize this module for seamless Discord authentication.
+
+## Installation
+
+To get started, install the latest version of `discord-authorize` using npm:
 
 ```sh
 npm install discord-authorize@latest
@@ -12,79 +16,77 @@ npm install discord-authorize@latest
 
 ### Setup
 
+Begin by importing the necessary components from the `discord-authorize` module and initializing a new instance of `DiscordAuthorization`.
+
 ```js
 const { DiscordAuthorization, Scopes } = require("discord-authorize");
 
 const discord = new DiscordAuthorization({
-  clientId: "CLIENT ID HERE",
-  clientSecret: "CLIENT SECRET HERE",
-  redirectUri: "THE REDIRECT URI",
+  clientId: "YOUR_CLIENT_ID",
+  clientSecret: "YOUR_CLIENT_SECRET",
+  redirectUri: "YOUR_REDIRECT_URI",
 });
 ```
 
-### Getting Authorization link
+### Generating Authorization Link
+
+Generate an OAuth2 authorization link by calling the `generateOauth2Link()` method, which creates a URL for users to grant permissions. This function requires scope(s) and a unique state parameter.
 
 ```js
-const link = discord.generateOauth2Link(
-  {
-    scopes: [Scopes.Identity, Scopes.Email],
-  },
-  "statuidiuudgiuiuw"
-); // here the generateOauth2Link gets two parameters, the first is for the scopes and second one is the state
+const scopes = [Scopes.Identity, Scopes.Email];
+const state = "UNIQUE_STATE_IDENTIFIER";
+
+const authorizationLink = discord.generateOauth2Link(scopes, state);
 ```
 
-### Handling the token
+### Handling Tokens
 
-You have to handle the token from the redirect uri. The redirect uri should have the 'code' query parameter, you have to recieve the code and use `exchangeCodeForTokens()` method to exchange the code with access or refresh token.
-Example (with expressjs):
+Upon successful authorization, you'll receive a code through the redirect URI's query parameter. Exchange this code for access and refresh tokens using the `exchangeCodeForTokens()` method. Here's an example using Express.js:
 
 ```js
 app.get("/auth/callback", async (req, res) => {
-  const code = req.query.code; // Recieving the code from the callback uri
-  const tokens = await discord.exchangeCodeForTokens(code); // Exchanging the code with the access and refresh tokens
+  const code = req.query.code;
+  const tokens = await discord.exchangeCodeForTokens(code);
 
-  res.cookie("access_token", tokens.accessToken); // Setting the accessToken to cookie
-  res.cookie("refresh_token", tokens.refreshToken); // Setting the refreshToken to cookie
+  res.cookie("access_token", tokens.accessToken);
+  res.cookie("refresh_token", tokens.refreshToken);
   res.redirect("/");
 });
 ```
 
-### Setting the tokens
+### Setting Tokens
 
-To set the access token and refresh token you can use the `setAcessToken()` and `setRevokeToken()` methods.
-Example:
-
-```js
-discord.setAccessToken(req.cookies("access_token")); // We are setting the access token from the cookie
-discord.setRevokeToken(req.cookies("refresh_token"));
-```
-
-### User info
-
-To recieve the authorized user information you can use the `getUserInfo()` method. It returns a [user](https://discord.com/developers/docs/resources/user#user-object) object
-
-Example:
+Use the `setAccessToken()` and `setRefreshToken()` methods to set the access and refresh tokens for subsequent requests. Here's how you can do this:
 
 ```js
-const info = await discord.getUserInfo();
-console.log(info);
+discord.setAccessToken(req.cookies.access_token);
+discord.setRefreshToken(req.cookies.refresh_token);
 ```
 
-### User connections
+### User Information
 
-To get the connections of a user, you must add `Connections` scope to the `generateOauth2Link()` function and then you can use `getUserConnections()` method to get the connections.
+Retrieve authorized user information through the `getUserInfo()` method, which returns a user object. Here's an example:
+
+```js
+const userInfo = await discord.getUserInfo();
+console.log(userInfo);
+```
+
+### User Connections
+
+If you require information about a user's connections, remember to include the `Connections` scope while generating the OAuth2 link. Subsequently, utilize the `getUserConnections()` method to retrieve the connections.
 
 ```js
 const userConnections = await discord.getUserConnections();
 
-const connectionNames = userConnections.map((connection) => ({
+const connectionInfo = userConnections.map((connection) => ({
   name: connection.name,
   type: connection.type,
   verified: connection.verified,
 }));
 ```
 
-The `getUserConnections()` method returns:
+The `getUserConnections()` method provides the following data structure:
 
 ```ts
 id: string;
@@ -98,12 +100,15 @@ verified: boolean;
 visibility: number;
 ```
 
-### Revoking the access token
+### Revoking Access Tokens
 
-In an hour, your access token will be expired and to not make the client authorize all time access token gets expired you can use the `revokeToken()` method.
-Example:
+To manage token expiration, use the `revokeToken()` method. This function revokes the current access token and provides a new one, ensuring uninterrupted access. Here's how you can do it:
 
 ```js
 const newAccessToken = await discord.revokeToken();
 res.cookie("access_token", newAccessToken.access_token);
 ```
+
+## Conclusion
+
+`discord-authorize` simplifies Discord authentication in Node.js applications. By following this guide, you can effortlessly integrate Discord authentication, user information retrieval, and token management into your projects.
