@@ -109,6 +109,10 @@ const newAccessToken = await discord.revokeToken();
 res.cookie("access_token", newAccessToken.access_token);
 ```
 
+### Full code
+
+If you want the full code visit [this](https://github.com/codeblitz97/discord-authorize/blob/main/test/index.js)
+
 ## Conclusion
 
 `discord-authorize` simplifies Discord authentication in Node.js applications. By following this guide, you can effortlessly integrate Discord authentication, user information retrieval, and token management into your projects.
