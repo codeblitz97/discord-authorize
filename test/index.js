@@ -1,4 +1,4 @@
-const { DiscordAuthorization, Scopes } = require("../dist");
+const { DiscordAuthorization, Scopes, Utils } = require("../dist");
 const auth = require("../auth.json");
 const app = require("express")();
 const cookieParser = require("cookie-parser");
@@ -29,7 +29,13 @@ app.use(cookieParser());
 app.get("/auth/login", async (req, res) => {
   const url = dA.generateOauth2Link(
     {
-      scopes: [Scopes.Identity, Scopes.Email, Scopes.Connections],
+      scopes: [
+        Scopes.Identity,
+        Scopes.Email,
+        Scopes.Connections,
+        Scopes.Guilds,
+        Scopes.GuildsMembersRead,
+      ],
     },
     generateHex(16)
   );
@@ -58,19 +64,28 @@ app.get("/user/info", async (req, res) => {
     }));
 
     const userInfo = await dA.getUserInfo();
+    const guilds = await dA.getGuilds();
 
     res.json({
       globalName: userInfo.global_name,
       userName: userInfo.username,
       email: userInfo.email,
       connections: connectionNames,
+      guilds:
+        guilds.map((g) => ({
+          name: g.name,
+          id: g.id,
+          icons: {
+            png: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png`,
+            jpg: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.jpg`,
+            webp: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.webp`,
+            gif: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.gif`,
+          },
+        })) || [],
+      totalGuilds: Utils.totalGuildCount(guilds),
     });
   } catch (error) {
-    const revokeToken = req.cookies("refresh_token");
-    dA.setRevokeToken(revokeToken);
-    const newAccessToken = await dA.revokeToken();
-    res.cookie("access_token", newAccessToken.access_token);
-    res.redirect("/user/info");
+    console.error(error);
   }
 });
 
