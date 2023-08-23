@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
-import { Scopes, UserInfo, ConnectionType } from "../types";
+import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -198,9 +198,18 @@ class DiscordAuthorization {
    * @returns {Promise<ConnectionType>} - User connections information.
    * @throws {Error} - If fetching user connections fails.
    */
-  public async getUserConnections(): Promise<ConnectionType> {
+  public async getUserConnections(): Promise<ConnectionType[]> {
     try {
       const response = await this.request("GET", "/users/@me/connections");
+      return response?.data;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  public async getGuilds(): Promise<Guild[]> {
+    try {
+      const response = await this.request("GET", "/users/@me/guilds");
       return response?.data;
     } catch (error: any) {
       throw new Error(error.message);

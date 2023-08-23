@@ -30,4 +30,13 @@ interface ConnectionType {
   visibility: number;
 }
 
-export { UserInfo, ConnectionType };
+interface Guild {
+  id: string;
+  name: string;
+  icon: string;
+  owner: boolean;
+  permissions: string;
+  features: string[];
+}
+
+export { UserInfo, ConnectionType, Guild };
