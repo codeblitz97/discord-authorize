@@ -3,6 +3,7 @@ import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
 import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
 import getType from "../util/getType";
+import { snowflake } from "../global";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -82,13 +83,21 @@ class DiscordAuthorization {
   /**
    * Generates an OAuth2 authorization link for Discord.
    * @param {{ scopes: Scopes[] }} param0 - Authorization scopes array.
-   * @param [state="1bac472"] - Authorization state
-   * @returns {string} - OAuth2 authorization link.
+   * @param {snowflake} [state="1bac472"] - Authorization state
+   * @returns {snowflake} - OAuth2 authorization link.
    */
   public generateOauth2Link(
     { scopes }: { scopes: Scopes[] },
-    state: string = "1bac472"
-  ): string {
+    state: snowflake = "1bac472"
+  ): snowflake {
+    if (getType(state) !== "snowflake") {
+      throw new TypeError(
+        `Expected type of state to be a 'snowflake' but got ${getType(
+          state
+        )} instead.`
+      );
+    }
+
     const params = new URLSearchParams({
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
@@ -102,11 +111,13 @@ class DiscordAuthorization {
 
   /**
    * Exchanges an authorization code for access and refresh tokens.
-   * @param {string} code - Authorization code.
+   * @param {snowflake} code - Authorization code.
    * @returns {Promise<object>} - Tokens object containing access and refresh tokens.
    * @throws {Error} - If the exchange process fails.
    */
-  public async exchangeCodeForTokens(code: string): Promise<object> {
+  public async exchangeCodeForTokens(
+    code: snowflake
+  ): Promise<{ accessToken: snowflake; refreshToken: snowflake }> {
     if (getType(code) !== "snowflake") {
       throw new TypeError(
         `Expected type of code to exchange to be 'snowflake' but got ${getType(
@@ -205,7 +216,7 @@ class DiscordAuthorization {
 
   /**
    * Retrieves connections of the authorized user.
-   * @returns {Promise<ConnectionType>} - User connections information.
+   * @returns {Promise<ConnectionType[]>} - User connections information.
    * @throws {Error} - If fetching user connections fails.
    */
   public async getUserConnections(): Promise<ConnectionType[]> {
@@ -217,6 +228,10 @@ class DiscordAuthorization {
     }
   }
 
+  /**
+   * Retrives joined guilds of the authorized user.
+   * @returns {Promise<Guild[]>} - User guilds information
+   */
   public async getGuilds(): Promise<Guild[]> {
     try {
       const response = await this.request("GET", "/users/@me/guilds");
@@ -226,6 +241,9 @@ class DiscordAuthorization {
     }
   }
 
+  /**
+   * This method is not implimented correctly yet.
+   */
   public async getApplication(): Promise<any> {
     try {
       const response = await this.request("GET", "/oauth2/applications/@me", {
