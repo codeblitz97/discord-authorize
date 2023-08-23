@@ -22,6 +22,7 @@ const dA = new DiscordAuthorization({
   clientId: auth.client_id,
   clientSecret: auth.client_secret,
   redirectUri: auth.redirect_uri,
+  clientToken: auth.token,
 });
 
 app.use(cookieParser());
@@ -35,6 +36,7 @@ app.get("/auth/login", async (req, res) => {
         Scopes.Connections,
         Scopes.Guilds,
         Scopes.GuildsMembersRead,
+        Scopes.Bot,
       ],
     },
     generateHex(16)
@@ -65,12 +67,14 @@ app.get("/user/info", async (req, res) => {
 
     const userInfo = await dA.getUserInfo();
     const guilds = await dA.getGuilds();
+    const applicationInfo = await dA.getApplication();
 
     res.json({
       globalName: userInfo.global_name,
       userName: userInfo.username,
       email: userInfo.email,
       connections: connectionNames,
+      applicationInfo: applicationInfo,
       guilds:
         guilds.map((g) => ({
           name: g.name,
