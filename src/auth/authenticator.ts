@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
 import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
+import getType from "../util/getType";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -13,6 +14,7 @@ class DiscordAuthorization {
   private accessToken: string | null = null;
   private baseURL = "https://discord.com/api/v10";
   private refreshToken: string | null = null;
+  private clientToken: string | null = null;
 
   /**
    * Creates an instance of DiscordAuthorization.
@@ -22,6 +24,7 @@ class DiscordAuthorization {
     this.clientId = options.clientId;
     this.clientSecret = options.clientSecret;
     this.redirectUri = options.redirectUri;
+    this.clientToken = options.clientToken ?? null;
   }
 
   /**
@@ -104,6 +107,13 @@ class DiscordAuthorization {
    * @throws {Error} - If the exchange process fails.
    */
   public async exchangeCodeForTokens(code: string): Promise<object> {
+    if (getType(code) !== "snowflake") {
+      throw new TypeError(
+        `Expected type of code to exchange to be 'snowflake' but got ${getType(
+          code
+        )}`
+      );
+    }
     const params = new URLSearchParams({
       client_id: this.clientId,
       client_secret: this.clientSecret,
@@ -210,6 +220,17 @@ class DiscordAuthorization {
   public async getGuilds(): Promise<Guild[]> {
     try {
       const response = await this.request("GET", "/users/@me/guilds");
+      return response?.data;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  public async getApplication(): Promise<any> {
+    try {
+      const response = await this.request("GET", "/oauth2/applications/@me", {
+        headers: { Authorization: `Bot ${this.clientToken}` },
+      });
       return response?.data;
     } catch (error: any) {
       throw new Error(error.message);
