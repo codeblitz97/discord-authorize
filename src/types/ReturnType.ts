@@ -1,5 +1,7 @@
+type snowflake = string;
+
 interface UserInfo {
-  id: string; // snowflake - the user's id - identify
+  id: snowflake; // snowflake - the user's id - identify
   username: string; // string - the user's username, not unique across the platform - identify
   discriminator: string; // string - the user's Discord-tag - identify
   global_name?: string | null; // string | null - the user's display name, if it is set. For bots, this is the application name - identify
