@@ -13,7 +13,7 @@ const totalGuildCount = <G extends Guild>(guildArray: G[]): number => {
     );
   }
 
-  return guildArray.length;
+  return guildArray.length + 1;
 };
 
 export { totalGuildCount };
