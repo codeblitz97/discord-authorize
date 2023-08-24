@@ -1,18 +1,19 @@
 type Guilds = object;
 
 /**
- * Returns the total guild count of a user
- * @param guildArray - The guild object-array
- * @returns Guilds count
+ * Returns the total guild count of a user.
+ * @param guildArray - An array of guild objects.
+ * @returns The total count of guilds.
+ * @throws {TypeError} If the input is not an array of guild objects.
  */
-const totalGuildCount = <G extends Guilds>(guildArray: G[]): number => {
-  if (typeof guildArray !== "object") {
+const totalGuildCount = <G extends Guild>(guildArray: G[]): number => {
+  if (!Array.isArray(guildArray)) {
     throw new TypeError(
-      `Guild array must be an object-array got ${typeof guildArray}`
+      `Guild array must be an array of guild objects, but got ${typeof guildArray}`
     );
   }
 
-  return (guildArray.length + 1) as number;
+  return guildArray.length;
 };
 
 export { totalGuildCount };
