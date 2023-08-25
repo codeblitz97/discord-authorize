@@ -1,3 +1,5 @@
+import getType from "./getType";
+
 type Guilds = object;
 
 /**
@@ -7,9 +9,11 @@ type Guilds = object;
  * @throws {TypeError} If the input is not an array of guild objects.
  */
 const totalGuildCount = <G extends Guilds>(guildArray: G[]): number => {
-  if (!Array.isArray(guildArray)) {
+  if (getType(guildArray) !== "array") {
     throw new TypeError(
-      `Guild array must be an array of guild objects, but got ${typeof guildArray}`
+      `Guild array must be an array of guild objects, but got ${getType(
+        guildArray
+      )}`
     );
   }
 
