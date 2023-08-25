@@ -36,7 +36,7 @@ Generate an OAuth2 authorization link by calling the `generateOauth2Link()` meth
 const scopes = [Scopes.Identity, Scopes.Email];
 const state = "UNIQUE_STATE_IDENTIFIER";
 
-const authorizationLink = discord.generateOauth2Link(scopes, state);
+const authorizationLink = discord.generateOauth2Link({ scopes: scopes }, state);
 ```
 
 ### Handling Tokens
