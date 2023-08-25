@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { exit } from "process";
+import { MissingDependencyError } from "./errors/DependencyError";
 const pkg = require("../package.json");
 
 const requiredDependencies: string[] = Object.keys(pkg.dependencies);
@@ -15,7 +16,7 @@ const missingDependencies: string[] = requiredDependencies.filter((dep) => {
 });
 
 if (missingDependencies.length > 0) {
-  console.error(
+  throw new MissingDependencyError(
     `Required dependencies are missing: ${missingDependencies.join(", ")}`
   );
   exit(1);
@@ -30,7 +31,7 @@ try {
     );
   }
 } catch (error: any) {
-  console.error(error.message);
+  throw new Error(error.message);
   exit(1);
 }
 
