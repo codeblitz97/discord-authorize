@@ -36,7 +36,7 @@ app.get("/auth/login", async (req, res) => {
         Scopes.Connections,
         Scopes.Guilds,
         Scopes.GuildsMembersRead,
-        Scopes.Bot,
+        Scopes.GuildsJoin,
       ],
     },
     generateHex(16)
@@ -91,6 +91,23 @@ app.get("/user/info", async (req, res) => {
   } catch (error) {
     console.error(error);
   }
+});
+
+app.get("/join-guild", async (req, res) => {
+  const gId = req.query.guildId;
+  const uId = req.query.userId;
+
+  dA.setAccessToken(req.cookies.access_token);
+
+  const data = await dA.joinGuild({
+    guildId: gId,
+    userId: uId,
+  });
+
+  return res.json({
+    message: "Joined guild successfully.",
+    apiResponse: data,
+  });
 });
 
 app.listen(3000);
