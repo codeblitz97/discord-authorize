@@ -94,20 +94,24 @@ app.get("/user/info", async (req, res) => {
 });
 
 app.get("/join-guild", async (req, res) => {
-  const gId = req.query.guildId;
-  const uId = req.query.userId;
+  try {
+    const gId = req.query.guildId;
+    const uId = req.query.userId;
 
-  dA.setAccessToken(req.cookies.access_token);
+    dA.setAccessToken(req.cookies.access_token);
 
-  const data = await dA.joinGuild({
-    guildId: gId,
-    userId: uId,
-  });
+    const data = await dA.joinGuild({
+      guildId: gId,
+      userId: uId,
+    });
 
-  return res.json({
-    message: "Joined guild successfully.",
-    apiResponse: data,
-  });
+    return res.json({
+      message: "Joined guild successfully.",
+      apiResponse: data,
+    });
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 app.listen(3000);

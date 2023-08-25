@@ -5,6 +5,14 @@ import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
 import getType from "../util/getType";
 import { snowflake } from "../global";
 import { GuildJoinOptions } from "../types/Authorize";
+import {
+  NotFoundError,
+  UnauthorizedError,
+  BadRequestError,
+  RateLimitedError,
+  InvalidAccessTokenError,
+  DiscordAPIError,
+} from "../errors";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -59,25 +67,75 @@ class DiscordAuthorization {
       requestOptions.params = options.params;
     }
 
+    const errorMessages: Record<number, string> = {
+      200: "Success",
+      300: "Multiple Choices",
+      400: "Bad request",
+      401: "Access token must be valid.",
+      429: "Request limit reached. Try again later.",
+      500: "Discord API Server Error",
+      404: "Not found.",
+      403: "You are not authorized to perform this action.",
+    };
+
     try {
       const response = await axios.request(requestOptions);
-      if (response.status == 200 || response.status == 300) {
-        return response;
-      } else if (response.status === 401) {
-        throw new Error(`Access token must be valid.`);
-      } else if (response.status === 429) {
-        throw new Error(`Request limit reached. Try again later`);
-      } else if (response.status === 500) {
-        throw new Error(`Discord API Server Error`);
-      } else if (response.status === 404) {
-        throw new Error(`Invalid request.`);
-      } else if (response.status === 403) {
-        throw new Error("You are not authorized to perform this action.");
-      } else {
-        throw new Error(`Status ${response.status} is not handled yet.`);
-      }
+
+      return response.data;
     } catch (error: any) {
-      throw new Error(`${error.message}`);
+      const errorMessage =
+        errorMessages[error.response.status] ||
+        `Status ${error.response.status} is not handled yet.`;
+
+      if (error.response.data && error.response.data.message) {
+        switch (error.response.status) {
+          case 401:
+            throw new InvalidAccessTokenError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+          case 404:
+            throw new NotFoundError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+          case 400:
+            throw new BadRequestError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+          case 429:
+            throw new RateLimitedError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+          case 500:
+            throw new DiscordAPIError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+          case 403:
+            throw new UnauthorizedError(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+
+          default:
+            throw new Error(
+              `${errorMessage} Response Data: ${JSON.stringify(
+                error.response.data
+              )}`
+            );
+        }
+      } else {
+        throw new Error(errorMessage);
+      }
     }
   }
 
@@ -134,21 +192,17 @@ class DiscordAuthorization {
       redirect_uri: this.redirectUri,
     });
 
-    try {
-      const response = await this.request("POST", "/oauth2/token", {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data: params.toString(),
-      });
+    const response = await this.request("POST", "/oauth2/token", {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: params.toString(),
+    });
 
-      return {
-        accessToken: response?.data.access_token,
-        refreshToken: response?.data.refresh_token,
-      };
-    } catch (error) {
-      throw new Error("Failed to exchange code for tokens");
-    }
+    return {
+      accessToken: response?.data.access_token,
+      refreshToken: response?.data.refresh_token,
+    };
   }
 
   /**
@@ -188,17 +242,13 @@ class DiscordAuthorization {
       },
     };
 
-    try {
-      await axios.post(
-        "https://discord.com/api/oauth2/token/revoke",
-        params.toString(),
-        config
-      );
-      this.accessToken = null;
-      this.refreshToken = null;
-    } catch (error) {
-      throw new Error("Failed to revoke token");
-    }
+    await axios.post(
+      "https://discord.com/api/oauth2/token/revoke",
+      params.toString(),
+      config
+    );
+    this.accessToken = null;
+    this.refreshToken = null;
   }
 
   /**
@@ -207,12 +257,8 @@ class DiscordAuthorization {
    * @throws {Error} - If fetching user information fails.
    */
   public async getUserInfo(): Promise<UserInfo> {
-    try {
-      const response = await this.request("GET", "/users/@me");
-      return response?.data;
-    } catch (error) {
-      throw new Error("Failed to fetch user information");
-    }
+    const response = await this.request("GET", "/users/@me");
+    return response?.data;
   }
 
   /**
@@ -221,12 +267,8 @@ class DiscordAuthorization {
    * @throws {Error} - If fetching user connections fails.
    */
   public async getUserConnections(): Promise<ConnectionType[]> {
-    try {
-      const response = await this.request("GET", "/users/@me/connections");
-      return response?.data;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    const response = await this.request("GET", "/users/@me/connections");
+    return response?.data;
   }
 
   /**
@@ -234,26 +276,18 @@ class DiscordAuthorization {
    * @returns {Promise<Guild[]>} - User guilds information
    */
   public async getGuilds(): Promise<Guild[]> {
-    try {
-      const response = await this.request("GET", "/users/@me/guilds");
-      return response?.data;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    const response = await this.request("GET", "/users/@me/guilds");
+    return response?.data;
   }
 
   /**
    * This method is not implimented correctly yet.
    */
   public async getApplication(): Promise<any> {
-    try {
-      const response = await this.request("GET", "/oauth2/applications/@me", {
-        headers: { Authorization: `Bot ${this.clientToken}` },
-      });
-      return response?.data;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    const response = await this.request("GET", "/oauth2/applications/@me", {
+      headers: { Authorization: `Bot ${this.clientToken}` },
+    });
+    return response?.data;
   }
 
   /**
@@ -263,25 +297,21 @@ class DiscordAuthorization {
    * @throws {Error} If an error occurs during the join process.
    */
   public async joinGuild(options: GuildJoinOptions): Promise<any> {
-    try {
-      const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
-      const rolesToAdd = options.roles || [];
+    const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
+    const rolesToAdd = options.roles || [];
 
-      const response = await axios.put(
-        `${this.baseURL}${endpoint}`,
-        { roles: rolesToAdd, access_token: this.accessToken },
-        {
-          headers: {
-            Authorization: `Bot ${this.clientToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const response = await axios.put(
+      `${this.baseURL}${endpoint}`,
+      { roles: rolesToAdd, access_token: this.accessToken },
+      {
+        headers: {
+          Authorization: `Bot ${this.clientToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    return response.data;
   }
 
   public async getGuildMember(guildId: snowflake): Promise<any> {
@@ -292,15 +322,11 @@ class DiscordAuthorization {
         )}`
       );
     }
-    try {
-      const response = await this.request(
-        "GET",
-        `/users/@me/guilds/${guildId}/member`
-      );
-      return response?.data;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    const response = await this.request(
+      "GET",
+      `/users/@me/guilds/${guildId}/member`
+    );
+    return response?.data;
   }
 
   /**
@@ -309,12 +335,8 @@ class DiscordAuthorization {
    * @throws {Error} - If fetching the username fails.
    */
   async username(): Promise<string> {
-    try {
-      const userInfo = await this.getUserInfo();
-      return userInfo.username;
-    } catch (e: any) {
-      throw new Error(e.message);
-    }
+    const userInfo = await this.getUserInfo();
+    return userInfo.username;
   }
 }
 
