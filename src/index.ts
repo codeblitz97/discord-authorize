@@ -2,11 +2,10 @@ import fs from "fs";
 import path from "path";
 import { exit } from "process";
 const pkg = require("../package.json");
-import { snowflake } from "./global";
 
-const requiredDependencies: snowflake[] = Object.keys(pkg.dependencies);
+const requiredDependencies: string[] = Object.keys(pkg.dependencies);
 
-const missingDependencies: snowflake[] = requiredDependencies.filter((dep) => {
+const missingDependencies: string[] = requiredDependencies.filter((dep) => {
   try {
     require.resolve(dep);
     return false;
