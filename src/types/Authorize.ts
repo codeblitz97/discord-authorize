@@ -1,3 +1,5 @@
+import { snowflake } from "../global";
+
 interface OAuth2Options {
   clientId: string;
   clientSecret: string;
@@ -5,4 +7,10 @@ interface OAuth2Options {
   clientToken?: string | undefined;
 }
 
-export { OAuth2Options };
+interface GuildJoinOptions {
+  guildId: snowflake;
+  userId: snowflake;
+  roles: snowflake[] | undefined;
+}
+
+export { OAuth2Options, GuildJoinOptions };

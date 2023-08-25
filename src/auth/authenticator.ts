@@ -4,6 +4,7 @@ import { OAuth2Options } from "../types";
 import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
 import getType from "../util/getType";
 import { snowflake } from "../global";
+import { GuildJoinOptions } from "../types/Authorize";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -249,6 +250,53 @@ class DiscordAuthorization {
       const response = await this.request("GET", "/oauth2/applications/@me", {
         headers: { Authorization: `Bot ${this.clientToken}` },
       });
+      return response?.data;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  /**
+   * Joins a guild with the specified options.
+   * @param {GuildJoinOptions} options - The options for joining the guild.
+   * @returns {Promise<any>} A promise that resolves with the response data upon successful joining.
+   * @throws {Error} If an error occurs during the join process.
+   */
+  public async joinGuild(options: GuildJoinOptions): Promise<any> {
+    try {
+      const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
+      const rolesToAdd = options.roles || [];
+
+      const response = await axios.put(
+        `${this.baseURL}${endpoint}`,
+        { roles: rolesToAdd, access_token: this.accessToken },
+        {
+          headers: {
+            Authorization: `Bot ${this.clientToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  public async getGuildMember(guildId: snowflake): Promise<any> {
+    if (getType(guildId) !== "snowflake") {
+      throw new TypeError(
+        `guildId is not a valid snowflake.\nExpected: 'snowflake'\tReceived: ${getType(
+          guildId
+        )}`
+      );
+    }
+    try {
+      const response = await this.request(
+        "GET",
+        `/users/@me/guilds/${guildId}/member`
+      );
       return response?.data;
     } catch (error: any) {
       throw new Error(error.message);
