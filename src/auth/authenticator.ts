@@ -91,39 +91,33 @@ class DiscordAuthorization {
         switch (error.response.status) {
           case 401:
             throw new InvalidAccessTokenError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
           case 404:
             throw new NotFoundError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
           case 400:
             throw new BadRequestError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
           case 429:
             throw new RateLimitedError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
           case 500:
             throw new DiscordAPIError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
           case 403:
             throw new UnauthorizedError(
-              `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
-              )}`
+              `${errorMessage}`,
+              JSON.stringify(error.response.data)
             );
 
           default:
@@ -142,16 +136,16 @@ class DiscordAuthorization {
   /**
    * Generates an OAuth2 authorization link for Discord.
    * @param {{ scopes: Scopes[] }} param0 - Authorization scopes array.
-   * @param {snowflake} [state="1bac472"] - Authorization state
-   * @returns {snowflake} - OAuth2 authorization link.
+   * @param {string} [state="1bac472"] - Authorization state
+   * @returns {string} - OAuth2 authorization link.
    */
   public generateOauth2Link(
     { scopes }: { scopes: Scopes[] },
-    state: snowflake = "1bac472"
-  ): snowflake {
-    if (getType(state) !== "snowflake") {
+    state: string = "1bac472"
+  ): string {
+    if (getType(state) !== "string") {
       throw new TypeError(
-        `Expected type of state to be a 'snowflake' but got ${getType(
+        `Expected type of state to be a 'string' but got ${getType(
           state
         )} instead.`
       );
@@ -170,16 +164,16 @@ class DiscordAuthorization {
 
   /**
    * Exchanges an authorization code for access and refresh tokens.
-   * @param {snowflake} code - Authorization code.
+   * @param {string} code - Authorization code.
    * @returns {Promise<object>} - Tokens object containing access and refresh tokens.
    * @throws {Error} - If the exchange process fails.
    */
   public async exchangeCodeForTokens(
-    code: snowflake
-  ): Promise<{ accessToken: snowflake; refreshToken: snowflake }> {
-    if (getType(code) !== "snowflake") {
+    code: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    if (getType(code) !== "string") {
       throw new TypeError(
-        `Expected type of code to exchange to be 'snowflake' but got ${getType(
+        `Expected type of code to exchange to be 'string' but got ${getType(
           code
         )}`
       );
