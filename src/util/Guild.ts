@@ -6,7 +6,7 @@ type Guilds = object;
  * @returns The total count of guilds.
  * @throws {TypeError} If the input is not an array of guild objects.
  */
-const totalGuildCount = <G extends Guild>(guildArray: G[]): number => {
+const totalGuildCount = <G extends Guilds>(guildArray: G[]): number => {
   if (!Array.isArray(guildArray)) {
     throw new TypeError(
       `Guild array must be an array of guild objects, but got ${typeof guildArray}`
