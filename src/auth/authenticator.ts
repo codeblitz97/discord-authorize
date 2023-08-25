@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import agents from "user-agent-array";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
 import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
@@ -14,9 +13,6 @@ import {
   InvalidAccessTokenError,
   DiscordAPIError,
 } from "../errors";
-
-const randomIndex = Math.floor(Math.random() * agents.length);
-const agent = agents[randomIndex];
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -58,7 +54,6 @@ class DiscordAuthorization {
     const headers = {
       ...(options.headers || {}),
       Authorization: `Bearer ${this.accessToken}`,
-      "User-Agent": agent,
     };
 
     const requestOptions: AxiosRequestConfig = {
@@ -66,7 +61,6 @@ class DiscordAuthorization {
       method,
       url: `${this.baseURL}${endpoint}`,
       headers,
-      httpAgent: agent,
     };
 
     if (method === "GET" && options.params) {
