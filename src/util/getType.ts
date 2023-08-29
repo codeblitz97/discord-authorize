@@ -1,23 +1,37 @@
-/**
- * Returns the type of a specific identifier.
- *
- * @example
- * ```ts
- * let a = "Hello!";
- * getType(a); // Returns: "string"
- * ```
- * Snowflake type:
- * @example
- * ```ts
- * let a = "1043709478031343647";
- * getType(a); // Returns: "snowflake"
- * ```
- * Learn more about snowflake types at: [Snowflakes Documentation](https://discord.com/developers/docs/reference#snowflakes)
- *
- * @template T - The type of the input identifier
- * @param {T} identifier - The type identifier
- * @returns {("number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function" | "array" | "snowflake" | "string" | "null" | "unknown")} The returned type
- */
+declare global {
+  interface Array<T> {
+    isSnowflakeArray(): boolean;
+    isStringArray(): boolean;
+    isNumberArray(): boolean;
+  }
+}
+
+class ExtendedArray<T> extends Array<T> {
+  isSnowflakeArray(): boolean {
+    return this.every((item) => isSnowflake(item));
+  }
+
+  isNumberArray(): boolean {
+    return this.every((item) => isNumber(item));
+  }
+
+  isStringArray(): boolean {
+    return this.every((item) => isString(item));
+  }
+}
+
+function isSnowflake<T>(value: T): boolean {
+  return /^[0-9]{18}$/.test(value as string);
+}
+
+function isString<T>(value: T): boolean {
+  return typeof value === "string";
+}
+
+function isNumber<T>(value: T): boolean {
+  return typeof value === "number";
+}
+
 const getType = <T>(
   identifier: T
 ):
@@ -28,8 +42,11 @@ const getType = <T>(
   | "undefined"
   | "object"
   | "function"
-  | "array"
+  | "numberArray"
+  | "stringArray"
+  | "snowflakeArray"
   | "snowflake"
+  | "array"
   | "string"
   | "null"
   | "unknown" => {
@@ -38,10 +55,20 @@ const getType = <T>(
   } else if (identifier === null) {
     return "null";
   } else if (Array.isArray(identifier)) {
-    return "array";
+    const arr = new ExtendedArray();
+    arr.push(...identifier);
+
+    if (arr.isStringArray()) {
+      return "stringArray";
+    } else if (arr.isNumberArray()) {
+      return "numberArray";
+    } else if (arr.isSnowflakeArray()) {
+      return "snowflakeArray";
+    } else {
+      return "array";
+    }
   } else if (typeof identifier === "string") {
-    const snowflakeRegex = /^[0-9]{18}$/;
-    if (snowflakeRegex.test(identifier)) {
+    if (isSnowflake(identifier)) {
       return "snowflake";
     } else {
       return "string";
