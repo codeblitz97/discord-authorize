@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { exit } from "process";
 import { MissingDependencyError } from "./errors/DependencyError";
 const pkg = require("../package.json");
 
@@ -19,7 +18,6 @@ if (missingDependencies.length > 0) {
   throw new MissingDependencyError(
     `Required dependencies are missing: ${missingDependencies.join(", ")}`
   );
-  exit(1);
 }
 
 const authFolderPath = path.join(__dirname, "auth");
@@ -32,7 +30,6 @@ try {
   }
 } catch (error: any) {
   throw new Error(error.message);
-  exit(1);
 }
 
 export * from "./auth";
