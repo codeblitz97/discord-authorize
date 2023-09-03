@@ -1,6 +1,6 @@
 export class CustomError extends Error {
   constructor(name: string, message: string, public responseData?: any) {
-    super(message);
+    super(`${message}`);
     this.name = name;
   }
 }
