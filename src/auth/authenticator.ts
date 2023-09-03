@@ -249,8 +249,19 @@ class DiscordAuthorization {
    * Retrieves information about the authorized user.
    * @returns {Promise<UserInfo>} - User information.
    * @throws {Error} - If fetching user information fails.
+   * @deprecated
    */
   public async getUserInfo(): Promise<UserInfo> {
+    const response = await this.request("GET", "/users/@me");
+    return response?.data;
+  }
+
+  /**
+   * Retrieves information about the authorized user.
+   * @returns {Promise<UserInfo>} - User information.
+   * @throws {Error} - If fetching user information fails.
+   */
+  public async getMyInfo(): Promise<UserInfo> {
     const response = await this.request("GET", "/users/@me");
     return response?.data;
   }
@@ -259,8 +270,19 @@ class DiscordAuthorization {
    * Retrieves connections of the authorized user.
    * @returns {Promise<ConnectionType[]>} - User connections information.
    * @throws {Error} - If fetching user connections fails.
+   * @deprecated
    */
   public async getUserConnections(): Promise<ConnectionType[]> {
+    const response = await this.request("GET", "/users/@me/connections");
+    return response?.data;
+  }
+
+  /**
+   * Retrieves connections of the authorized user.
+   * @returns {Promise<ConnectionType[]>} - User connections information.
+   * @throws {Error} - If fetching user connections fails.
+   */
+  public async getMyConnections(): Promise<ConnectionType[]> {
     const response = await this.request("GET", "/users/@me/connections");
     return response?.data;
   }
@@ -329,7 +351,25 @@ class DiscordAuthorization {
     return response.data;
   }
 
+  /**
+   *@deprecated
+   */
   public async getGuildMember(guildId: snowflake): Promise<any> {
+    if (getType(guildId) !== "snowflake") {
+      throw new TypeError(
+        `guildId is not a valid snowflake.\nExpected: 'snowflake'\tReceived: ${getType(
+          guildId
+        )}`
+      );
+    }
+    const response = await this.request(
+      "GET",
+      `/users/@me/guilds/${guildId}/member`
+    );
+    return response?.data;
+  }
+
+  public async getMyInfoFromGuild(guildId: snowflake): Promise<any> {
     if (getType(guildId) !== "snowflake") {
       throw new TypeError(
         `guildId is not a valid snowflake.\nExpected: 'snowflake'\tReceived: ${getType(
@@ -350,7 +390,7 @@ class DiscordAuthorization {
    * @throws {Error} - If fetching the username fails.
    */
   async username(): Promise<string> {
-    const userInfo = await this.getUserInfo();
+    const userInfo = await this.getMyInfo();
     return userInfo.username;
   }
 }
