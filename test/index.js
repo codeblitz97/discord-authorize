@@ -57,7 +57,7 @@ app.get("/user/info", async (req, res) => {
     const accessToken = req.cookies.access_token;
     dA.setAccessToken(accessToken);
 
-    const userConnections = await dA.getUserConnections();
+    const userConnections = await dA.getMyConnections();
 
     const connectionNames = userConnections.map((connection) => ({
       name: connection.name,
@@ -65,7 +65,7 @@ app.get("/user/info", async (req, res) => {
       verified: connection.verified,
     }));
 
-    const userInfo = await dA.getUserInfo();
+    const userInfo = await dA.getMyInfo();
     const guilds = await dA.getGuilds();
     const applicationInfo = await dA.getApplication();
 
