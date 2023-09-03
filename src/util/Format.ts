@@ -36,4 +36,29 @@ const formatUserAvatar = <I extends string>(
   };
 };
 
-export { formatUserAvatar };
+const formatServerIcon = <I extends string>(
+  guildId: snowflake,
+  imageString: I
+): Image => {
+  if (getType(guildId) !== "snowflake") {
+    throw new TypeError(
+      `Expected type of user id to be 'snowflake' but got ${getType(
+        guildId
+      )} instead.`
+    );
+  }
+
+  const formattedJPG = `https://cdn.discordapp.com/icons/${guildId}/${imageString}.jpg`;
+  const formattedPNG = `https://cdn.discordapp.com/icons/${guildId}/${imageString}.png`;
+  const formattedWEBP = `https://cdn.discordapp.com/icons/${guildId}/${imageString}.webp`;
+  const formattedGIF = `https://cdn.discordapp.com/icons/${guildId}/${imageString}.gif`;
+
+  return {
+    jpg: formattedJPG,
+    png: formattedPNG,
+    webp: formattedWEBP,
+    gif: formattedGIF,
+  };
+};
+
+export { formatUserAvatar, formatServerIcon };
