@@ -41,4 +41,11 @@ interface Guild {
   features: string[];
 }
 
-export { UserInfo, ConnectionType, Guild };
+interface Image {
+  jpg: string;
+  png: string;
+  webp: string;
+  gif: string;
+}
+
+export { UserInfo, ConnectionType, Guild, Image };
