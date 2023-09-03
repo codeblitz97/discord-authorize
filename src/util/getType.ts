@@ -3,6 +3,7 @@ declare global {
     isSnowflakeArray(): boolean;
     isStringArray(): boolean;
     isNumberArray(): boolean;
+    isBooleanArray(): boolean;
   }
 }
 
@@ -18,6 +19,9 @@ class ExtendedArray<T> extends Array<T> {
   isStringArray(): boolean {
     return this.every((item) => isString(item));
   }
+  isBooleanArray(): boolean {
+    return this.every((item) => isBoolean(item));
+  }
 }
 
 function isSnowflake<T>(value: T): boolean {
@@ -30,6 +34,10 @@ function isString<T>(value: T): boolean {
 
 function isNumber<T>(value: T): boolean {
   return typeof value === "number";
+}
+
+function isBoolean<T>(value: T): boolean {
+  return typeof value === "boolean";
 }
 
 const getType = <T>(
@@ -45,6 +53,7 @@ const getType = <T>(
   | "numberArray"
   | "stringArray"
   | "snowflakeArray"
+  | "booleanArray"
   | "snowflake"
   | "array"
   | "string"
@@ -64,6 +73,8 @@ const getType = <T>(
       return "numberArray";
     } else if (arr.isSnowflakeArray()) {
       return "snowflakeArray";
+    } else if (arr.isBooleanArray()) {
+      return "booleanArray";
     } else {
       return "array";
     }
