@@ -189,12 +189,15 @@ class DiscordAuthorization {
       redirect_uri: this.redirectUri,
     });
 
-    const response = await this.request("POST", `/oauth2/token`, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      data: params.toString(),
-    });
+    const response = await axios.post(
+      `${this.baseURL}/oauth2/token`,
+      params.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
 
     return {
       accessToken: response?.data.access_token,
