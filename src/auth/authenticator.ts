@@ -65,6 +65,9 @@ class DiscordAuthorization {
 
     if (method === "GET" && options.params) {
       requestOptions.params = options.params;
+    } else if (["PUT", "POST", "PATCH"].includes(method)) {
+      // For PUT, POST, and PATCH methods, pass the request data
+      requestOptions.data = options.data;
     }
 
     const errorMessages: Record<number, string> = {
@@ -84,46 +87,46 @@ class DiscordAuthorization {
       return response.data;
     } catch (error: any) {
       const errorMessage =
-        errorMessages[error.response.status] ||
-        `Status ${error.response.status} is not handled yet.`;
+        errorMessages[error?.response.status] ||
+        `Status ${error?.response.status} is not handled yet.`;
 
-      if (error.response.data && error.response.data.message) {
-        switch (error.response.status) {
+      if (error?.response.data && error?.response.data.message) {
+        switch (error?.response.status) {
           case 401:
             throw new InvalidAccessTokenError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
           case 404:
             throw new NotFoundError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
           case 400:
             throw new BadRequestError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
           case 429:
             throw new RateLimitedError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
           case 500:
             throw new DiscordAPIError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
           case 403:
             throw new UnauthorizedError(
               `${errorMessage}`,
-              JSON.stringify(error.response.data)
+              JSON.stringify(error?.response.data)
             );
 
           default:
             throw new Error(
               `${errorMessage} Response Data: ${JSON.stringify(
-                error.response.data
+                error?.response.data
               )}`
             );
         }
@@ -186,7 +189,7 @@ class DiscordAuthorization {
       redirect_uri: this.redirectUri,
     });
 
-    const response = await this.request("POST", "/oauth2/token", {
+    const response = await this.request("POST", `/oauth2/token`, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -228,7 +231,7 @@ class DiscordAuthorization {
     const params = new URLSearchParams();
     params.append("client_id", this.clientId);
     params.append("client_secret", this.clientSecret);
-    params.append("token", this.accessToken);
+    params.append("token", this.refreshToken);
 
     const config: AxiosRequestConfig = {
       headers: {
