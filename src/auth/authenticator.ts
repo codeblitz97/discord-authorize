@@ -84,7 +84,7 @@ class DiscordAuthorization {
     try {
       const response = await axios.request(requestOptions);
 
-      return response.data;
+      return response;
     } catch (error: any) {
       const errorMessage =
         errorMessages[error?.response.status] ||
@@ -189,15 +189,10 @@ class DiscordAuthorization {
       redirect_uri: this.redirectUri,
     });
 
-    const response = await axios.post(
-      `${this.baseURL}/oauth2/token`,
-      params.toString(),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
+    const response = await this.request("POST", "/oauth2/token", {
+      data: params.toString(),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
 
     return {
       accessToken: response?.data.access_token,
@@ -267,8 +262,12 @@ class DiscordAuthorization {
    * @returns {Promise<UserInfo>} - User information.
    * @throws {Error} - If fetching user information fails.
    */
-  public async getMyInfo(): Promise<UserInfo> {
+  public async getMyInfo(): Promise<any> {
+    if (!this.accessToken || this.accessToken === undefined) {
+      throw new UnauthorizedError("Access token isn't provided.");
+    }
     const response = await this.request("GET", "/users/@me");
+
     return response?.data;
   }
 

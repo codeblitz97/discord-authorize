@@ -36,7 +36,6 @@ app.get("/auth/login", async (req, res) => {
         Scopes.Connections,
         Scopes.Guilds,
         Scopes.GuildsMembersRead,
-        Scopes.GuildsJoin,
       ],
     },
     generateHex(16)
@@ -57,36 +56,10 @@ app.get("/user/info", async (req, res) => {
     const accessToken = req.cookies.access_token;
     dA.setAccessToken(accessToken);
 
-    const userConnections = await dA.getMyConnections();
-
-    const connectionNames = userConnections.map((connection) => ({
-      name: connection.name,
-      type: connection.type,
-      verified: connection.verified,
-    }));
-
     const userInfo = await dA.getMyInfo();
-    const guilds = await dA.getGuilds();
-    const applicationInfo = await dA.getApplication();
 
     res.json({
-      globalName: userInfo.global_name,
-      userName: userInfo.username,
-      email: userInfo.email,
-      connections: connectionNames,
-      applicationInfo: applicationInfo,
-      guilds:
-        guilds.map((g) => ({
-          name: g.name,
-          id: g.id,
-          icons: {
-            png: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png`,
-            jpg: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.jpg`,
-            webp: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.webp`,
-            gif: `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.gif`,
-          },
-        })) || [],
-      totalGuilds: Utils.totalGuildCount(guilds),
+      userInfo,
     });
   } catch (error) {
     console.error(error);
