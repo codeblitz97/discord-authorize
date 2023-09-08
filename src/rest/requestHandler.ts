@@ -6,6 +6,7 @@ import {
   RateLimitedError,
   InvalidAccessTokenError,
   DiscordAPIError,
+  errorMessages,
 } from "../errors";
 import getType from "../util/getType";
 
@@ -49,17 +50,6 @@ async function request(
     // For PUT, POST, and PATCH methods, pass the request data
     requestOptions.data = options.data;
   }
-
-  const errorMessages: Record<number, string> = {
-    200: "Success",
-    300: "Multiple Choices",
-    400: "Bad request",
-    401: "Access token must be valid.",
-    429: "Request limit reached. Try again later.",
-    500: "Discord API Server Error",
-    404: "Not found.",
-    403: "You are not authorized to perform this action.",
-  };
 
   try {
     const response = await axios.request(requestOptions);

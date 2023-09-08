@@ -6,3 +6,5 @@ export {
   BadRequestError,
   NotFoundError,
 } from "./DiscordAPIErrors";
+
+export { errorMessages } from "./messages";
