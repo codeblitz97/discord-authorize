@@ -7,4 +7,4 @@ export {
   NotFoundError,
 } from "./DiscordAPIErrors";
 
-export { errorMessages } from "./messages";
+export { errorMessages, statusCodedErrorMessages } from "./messages";

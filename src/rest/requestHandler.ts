@@ -7,6 +7,7 @@ import {
   InvalidAccessTokenError,
   DiscordAPIError,
   errorMessages,
+  statusCodedErrorMessages,
 } from "../errors";
 import getType from "../util/getType";
 
@@ -60,7 +61,13 @@ async function request(
       errorMessages[error?.response.status] ||
       `Status ${error?.response.status} is not handled yet.`;
 
-    if (error?.response.data && error?.response.data.message) {
+    const sEM = statusCodedErrorMessages[error?.response.data.code];
+
+    if (
+      error?.response.data &&
+      error?.response.data.message &&
+      error?.response.data.code === 0
+    ) {
       switch (error?.response.status) {
         case 401:
           throw new InvalidAccessTokenError(
@@ -100,6 +107,12 @@ async function request(
             )}`
           );
       }
+    } else if (
+      error?.response.data &&
+      error?.response.data.message &&
+      error?.response.data.code !== 0
+    ) {
+      throw new DiscordAPIError(sEM, error?.response.data);
     } else {
       throw new Error(errorMessage);
     }
