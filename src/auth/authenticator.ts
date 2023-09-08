@@ -14,6 +14,7 @@ import {
   username,
 } from "../rest";
 import getType from "../util/getType";
+import { DiscordAPIError, statusCodedErrorMessages } from "../errors";
 
 /**
  * Represents an instance of Discord OAuth2 authorization flow.
@@ -195,21 +196,45 @@ class DiscordAuthorization {
    * @throws {Error} If an error occurs during the join process.
    */
   public async joinGuild(options: GuildJoinOptions): Promise<any> {
-    const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
-    const rolesToAdd = options.roles || [];
+    try {
+      const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
+      const rolesToAdd = options.roles || [];
 
-    const response = await axios.put(
-      `${this.baseURL}${endpoint}`,
-      { roles: rolesToAdd, access_token: this.accessToken },
-      {
-        headers: {
-          Authorization: `Bot ${this.clientToken}`,
-          "Content-Type": "application/json",
-        },
+      const response = await axios.put(
+        `${this.baseURL}${endpoint}`,
+        { roles: rolesToAdd, access_token: this.accessToken },
+        {
+          headers: {
+            Authorization: `Bot ${this.clientToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return response?.data;
+    } catch (err: any) {
+      if (
+        err?.response.data &&
+        err?.response.data.message &&
+        err?.response.status &&
+        err?.response.data.code === 0
+      ) {
+        throw new DiscordAPIError(
+          err?.response.data.message,
+          err?.response.data
+        );
+      } else if (
+        err?.response.data &&
+        err?.response.data.message &&
+        err?.response.status &&
+        err?.response.data.code !== 0
+      ) {
+        const sEM = statusCodedErrorMessages[err?.response.data.code];
+        throw new DiscordAPIError(sEM, err?.response.data);
+      } else {
+        throw new Error(err?.response.data.message);
       }
-    );
-
-    return response.data;
+    }
   }
 
   /**
