@@ -36,6 +36,7 @@ app.get("/auth/login", async (req, res) => {
         Scopes.Connections,
         Scopes.Guilds,
         Scopes.GuildsMembersRead,
+        Scopes.GuildsJoin,
       ],
     },
     generateHex(16)
