@@ -25,7 +25,7 @@ class ExtendedArray<T> extends Array<T> {
 }
 
 function isSnowflake<T>(value: T): boolean {
-  return /^[0-9]{18}$/.test(value as any);
+  return /^\d{18}$/.test(value as any);
 }
 
 function isString<T>(value: T): boolean {
