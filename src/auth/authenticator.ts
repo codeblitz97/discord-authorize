@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { URLSearchParams } from "url";
 import { OAuth2Options } from "../types";
 import { Scopes, UserInfo, ConnectionType, Guild } from "../types";
@@ -12,6 +12,7 @@ import {
   getProfileInGuilds,
   getTokens,
   username,
+  email,
 } from "../rest";
 import getType from "../util/getType";
 import { DiscordAPIError, statusCodedErrorMessages } from "../errors";
@@ -33,6 +34,41 @@ class DiscordAuthorization {
    * @param {OAuth2Options} options - Options for OAuth2 authorization.
    */
   constructor(options: OAuth2Options) {
+    if (getType(options.clientId) !== "string") {
+      throw new TypeError(
+        `Expected type of client id to be 'string' but got '${getType(
+          options.clientId
+        )}' instead.`
+      );
+    }
+    if (getType(options.clientSecret) !== "string") {
+      throw new TypeError(
+        `Expected type of client secret to be 'string' but got '${getType(
+          options.clientSecret
+        )}' instead.`
+      );
+    }
+    if (getType(options.redirectUri) !== "string") {
+      throw new TypeError(
+        `Expected type of redirect uri to be 'string' but got '${getType(
+          options.redirectUri
+        )}' instead.`
+      );
+    }
+
+    if (
+      options.clientToken &&
+      options.clientToken !== null &&
+      (getType(options.clientToken) !== "string" ||
+        getType(options.clientToken) !== "undefined")
+    ) {
+      throw new TypeError(
+        `Expected type of client token to be 'string' but got '${getType(
+          options.clientToken
+        )}' instead.`
+      );
+    }
+
     this.clientId = options.clientId;
     this.clientSecret = options.clientSecret;
     this.redirectUri = options.redirectUri;
@@ -92,14 +128,14 @@ class DiscordAuthorization {
    * Sets the refresh token.
    * @param {string} token - The refresh token to set.
    */
-  public setRevokeToken(token: string): void {
+  public setRefreshToken(token: string): void {
     this.refreshToken = token;
   }
 
   /**
    * Revokes the existinga ccess token
    */
-  async revokeToken(): Promise<void> {
+  async refreshAccessToken(): Promise<void> {
     if (!this.accessToken || !this.refreshToken) {
       throw new Error(
         "Access token and refresh token are required to revoke the token."
@@ -130,33 +166,9 @@ class DiscordAuthorization {
    * Retrieves information about the authorized user.
    * @returns {Promise<UserInfo>} - User information.
    * @throws {Error} - If fetching user information fails.
-   * @deprecated
    */
-  public async getUserInfo(): Promise<UserInfo> {
+  public async getMyInfo(): Promise<UserInfo> {
     const info = await getInfo(this.accessToken as string);
-
-    return info;
-  }
-
-  /**
-   * Retrieves information about the authorized user.
-   * @returns {Promise<UserInfo>} - User information.
-   * @throws {Error} - If fetching user information fails.
-   */
-  public async getMyInfo(): Promise<any> {
-    const info = await getInfo(this.accessToken as string);
-
-    return info;
-  }
-
-  /**
-   * Retrieves connections of the authorized user.
-   * @returns {Promise<ConnectionType[]>} - User connections information.
-   * @throws {Error} - If fetching user connections fails.
-   * @deprecated
-   */
-  public async getUserConnections(): Promise<ConnectionType[]> {
-    const info = await getConnections(this.accessToken as string);
 
     return info;
   }
@@ -185,7 +197,7 @@ class DiscordAuthorization {
   /**
    * Get info of the bot.
    */
-  public async getApplication(): Promise<any> {
+  public getApplication(): Error {
     throw new Error("Use discord.js or eris or any other module for it.");
   }
 
@@ -196,6 +208,27 @@ class DiscordAuthorization {
    * @throws {Error} If an error occurs during the join process.
    */
   public async joinGuild(options: GuildJoinOptions): Promise<any> {
+    if (getType(options.guildId) !== "snowflake") {
+      throw new TypeError(
+        `Expected guild id to be a valid 'snowflake' but got ${getType(
+          options.guildId
+        )} instead.`
+      );
+    }
+    if (getType(options.userId) !== "snowflake") {
+      throw new TypeError(
+        `Expected user id to be a valid 'snowflake' but got ${getType(
+          options.userId
+        )} instead.`
+      );
+    }
+    if (getType(options.roles) !== "snowflakeArray") {
+      throw new TypeError(
+        `Expected roles to be a valid 'snowflakeArray' but got ${getType(
+          options.roles
+        )} instead.`
+      );
+    }
     try {
       const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
       const rolesToAdd = options.roles || [];
@@ -237,15 +270,6 @@ class DiscordAuthorization {
     }
   }
 
-  /**
-   *@deprecated
-   */
-  public async getGuildMember(guildId: snowflake): Promise<any> {
-    const r = await getProfileInGuilds(guildId, this.accessToken as string);
-
-    return r;
-  }
-
   public async getMyInfoFromGuild(guildId: snowflake): Promise<any> {
     const r = await getProfileInGuilds(guildId, this.accessToken as string);
 
@@ -257,10 +281,22 @@ class DiscordAuthorization {
    * @returns {Promise<string>} - User's username.
    * @throws {Error} - If fetching the username fails.
    */
-  async username(): Promise<string> {
+  async getMyUsername(): Promise<string> {
     const r = await username(this.accessToken as string);
 
     return r;
+  }
+
+  /**
+   * Retrieves the email of the authorized user.
+   * @returns {Promise<string>} - User's email.
+   * @throws {Error} - If fetching the email fails.
+   */
+
+  async getMyEmail(): Promise<string> {
+    const r: string = await email(this.accessToken as string);
+
+    return String(r);
   }
 }
 
