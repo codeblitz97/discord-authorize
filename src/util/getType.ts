@@ -1,3 +1,20 @@
+const EPOCH = 1420070400000n;
+
+function generate({ exact = true, global = true, multiline = true } = {}) {
+  const distance = BigInt(Date.now()) - EPOCH;
+  const snowflake = (distance << 22n) | (1n << 17n) | (1n << 12n);
+  const min = 17;
+  const max = snowflake.toString().length;
+  let regex = `\\d{${min},${max}}`;
+  let flags = "";
+  if (exact) regex = `^${regex}$`;
+  if (global) flags += "g";
+  if (multiline) flags += "m";
+  return new RegExp(regex, flags);
+}
+
+const snowflakeRegex = generate();
+
 declare global {
   interface Array<T> {
     isSnowflakeArray(): boolean;
@@ -25,7 +42,7 @@ class ExtendedArray<T> extends Array<T> {
 }
 
 function isSnowflake<T>(value: T): boolean {
-  return /^\d{18}$/.test(value as any);
+  return snowflakeRegex.test(value as string);
 }
 
 function isString<T>(value: T): boolean {
@@ -78,12 +95,10 @@ const getType = <T>(
     } else {
       return "array";
     }
+  } else if (isSnowflake(identifier)) {
+    return "snowflake";
   } else if (typeof identifier === "string") {
-    if (isSnowflake(identifier)) {
-      return "snowflake";
-    } else {
-      return "string";
-    }
+    return "string";
   } else if (typeof identifier === "bigint") {
     return "bigint";
   } else if (typeof identifier === "boolean") {
