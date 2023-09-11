@@ -1,7 +1,7 @@
 {
   "name": "discord-authorize",
   "description": "A node module for easy authentication with Discord",
-  "version": "1.3.3",
+  "version": "2.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
