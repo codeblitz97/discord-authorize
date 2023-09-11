@@ -6,3 +6,4 @@ export { getProfileInGuilds } from "./getProfileInGuilds";
 export { getTokens } from "./getTokens";
 export { joinGuild } from "./joinGuild";
 export { username } from "./userName";
+export { email } from "./email";
