@@ -7,4 +7,5 @@ export {
   getProfileInGuilds,
   getTokens,
   username,
+  email,
 } from "./functions";
