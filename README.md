@@ -63,30 +63,30 @@ discord.setAccessToken(req.cookies.access_token);
 discord.setRefreshToken(req.cookies.refresh_token);
 ```
 
-### User Information
+### Authorized User's Information
 
-Retrieve authorized user information through the `getUserInfo()` method, which returns a user object. Here's an example:
+Retrieve authorized user information through the `getMyInfo()` method, which returns a user object. Here's an example:
 
 ```js
-const userInfo = await discord.getUserInfo();
-console.log(userInfo);
+const myInfo = await discord.getMyInfo();
+console.log(myInfo);
 ```
 
-### User Connections
+### Authorized User's Connections
 
-If you require information about a user's connections, remember to include the `Connections` scope while generating the OAuth2 link. Subsequently, utilize the `getUserConnections()` method to retrieve the connections.
+If you require information about a user's connections, remember to include the `Connections` scope while generating the OAuth2 link. Subsequently, utilize the `getMyConnections()` method to retrieve the connections.
 
 ```js
-const userConnections = await discord.getUserConnections();
+const myConnections = await discord.getMyConnections();
 
-const connectionInfo = userConnections.map((connection) => ({
+const connectionInfo = myConnections.map((connection) => ({
   name: connection.name,
   type: connection.type,
   verified: connection.verified,
 }));
 ```
 
-The `getUserConnections()` method provides the following data structure:
+The `getMyConnections()` method provides the following data structure:
 
 ```ts
 id: string;
@@ -100,12 +100,63 @@ verified: boolean;
 visibility: number;
 ```
 
-### Revoking Access Tokens
+### Joining a guild
 
-To manage token expiration, use the `revokeToken()` method. This function revokes the current access token and provides a new one, ensuring uninterrupted access. Here's how you can do it:
+This module is nothing without the `joinGuild()` method. To join a guild, you can use `joinGuild()` method. The method expects `GuildJoinOptions` which has:
+
+```ts
+guildId: snowflake;
+userId: snowflake;
+roles: snowflake[] | undefined;
+```
+
+This method requires a client (bot) in order to join a server.
+Now let's see the an usage of it:
 
 ```js
-const newAccessToken = await discord.revokeToken();
+const discord = new DiscordAuthorize({
+  clientId: "YOUR_CLIENT_ID",
+  clientSecret: "YOUR_CLIENT_SECRET",
+  redirectUri: "YOUR_REDIRECT_URI",
+  clientToken: "YOUR_BOT_TOKEN",
+});
+
+const response = await discord.joinGuild({
+  guildId: "1148367209371021341",
+  userId: "1074981842886864891",
+});
+
+res.json(response);
+```
+
+### Get Authorized User's Guild and it's information
+
+With the `getGuilds()` function, we can get the information about what guild we are in and the information about the guilds we are in. Let's see an example of using it in the code below:
+
+```js
+const guilds = await discord.getGuilds();
+
+res.json(guilds);
+```
+
+Now how to count the guild? We can do this manually but `discord-authorize` module provides builtin utility function to do it.
+
+```js
+const { Utils } = require("discord-authorize");
+
+const guilds = await discord.getGuilds();
+
+res.json({
+  totalGuilds: Utils.totalGuildCount(guilds),
+});
+```
+
+### Refreshing Access Tokens
+
+To manage token expiration, use the `refreshToken()` method. This function revokes the current access token and provides a new one, ensuring uninterrupted access. Here's how you can do it:
+
+```js
+const newAccessToken = await discord.refreshToken();
 res.cookie("access_token", newAccessToken.access_token);
 ```
 
