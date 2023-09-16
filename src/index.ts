@@ -3,6 +3,24 @@ import path from "path";
 import { MissingDependencyError } from "./errors/DependencyError";
 const pkg = require("../package.json");
 
+function compareVersions(versionA: string, versionB: string) {
+  const partsA = versionA.split(".").map(Number);
+  const partsB = versionB.split(".").map(Number);
+
+  for (let i = 0; i < 3; i++) {
+    if (partsA[i] < partsB[i]) return -1;
+    if (partsA[i] > partsB[i]) return 1;
+  }
+
+  return 0;
+}
+const requiredVersion = "17.0.0";
+const currentNodeVersion = process.versions.node;
+
+if (compareVersions(currentNodeVersion, requiredVersion) < 0) {
+  throw new Error(`Node.js version ${requiredVersion} or higher is required.`);
+}
+
 const requiredDependencies: string[] = Object.keys(pkg.dependencies);
 
 const missingDependencies: string[] = requiredDependencies.filter((dep) => {
