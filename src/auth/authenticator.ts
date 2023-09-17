@@ -34,9 +34,9 @@ class DiscordAuthorization {
    * @param {OAuth2Options} options - Options for OAuth2 authorization.
    */
   constructor(options: OAuth2Options) {
-    if (getType(options.clientId) !== "string") {
+    if (getType(options.clientId) !== "snowflake") {
       throw new TypeError(
-        `Expected type of client id to be 'string' but got '${getType(
+        `Expected type of client id to be 'snowflake' but got '${getType(
           options.clientId
         )}' instead.`
       );
@@ -57,10 +57,8 @@ class DiscordAuthorization {
     }
 
     if (
-      options.clientToken &&
-      options.clientToken !== null &&
-      (getType(options.clientToken) !== "string" ||
-        getType(options.clientToken) !== "undefined")
+      options.clientToken !== undefined &&
+      getType(options.clientToken) !== "string"
     ) {
       throw new TypeError(
         `Expected type of client token to be 'string' but got '${getType(
