@@ -81,9 +81,7 @@ const getType = <T>(
   } else if (identifier === null) {
     return "null";
   } else if (Array.isArray(identifier)) {
-    const arr = new ExtendedArray();
-    arr.push(...identifier);
-
+    const arr = ExtendedArray.from(identifier); // Use Array.from() here
     if (arr.isStringArray()) {
       return "stringArray";
     } else if (arr.isNumberArray()) {

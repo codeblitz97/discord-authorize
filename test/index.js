@@ -1,4 +1,4 @@
-const { DiscordAuthorization, Scopes, Utils } = require("../dist");
+const { DiscordAuthorization, Scopes, Utils, toSnowflake } = require("../dist");
 const auth = require("../auth.json");
 const app = require("express")();
 const cookieParser = require("cookie-parser");
@@ -69,8 +69,11 @@ app.get("/user/info", async (req, res) => {
 
 app.get("/join-guild", async (req, res) => {
   try {
-    const gId = req.query.guildId;
-    const uId = req.query.userId;
+    const gId = toSnowflake(req.query.guildId);
+    const uId = toSnowflake(req.query.userId);
+
+    console.log(gId);
+    console.log(uId);
 
     dA.setAccessToken(req.cookies.access_token);
 

@@ -206,27 +206,6 @@ class DiscordAuthorization {
    * @throws {Error} If an error occurs during the join process.
    */
   public async joinGuild(options: GuildJoinOptions): Promise<any> {
-    if (getType(options.guildId) !== "snowflake") {
-      throw new TypeError(
-        `Expected guild id to be a valid 'snowflake' but got ${getType(
-          options.guildId
-        )} instead.`
-      );
-    }
-    if (getType(options.userId) !== "snowflake") {
-      throw new TypeError(
-        `Expected user id to be a valid 'snowflake' but got ${getType(
-          options.userId
-        )} instead.`
-      );
-    }
-    if (getType(options.roles) !== "snowflakeArray") {
-      throw new TypeError(
-        `Expected roles to be a valid 'snowflakeArray' but got ${getType(
-          options.roles
-        )} instead.`
-      );
-    }
     try {
       const endpoint = `/guilds/${options.guildId}/members/${options.userId}`;
       const rolesToAdd = options.roles || [];

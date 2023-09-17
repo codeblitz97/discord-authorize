@@ -1,1 +1,1 @@
-export { snowflake } from "./dataTypes";
+export { snowflake, toSnowflake } from "./dataTypes";
