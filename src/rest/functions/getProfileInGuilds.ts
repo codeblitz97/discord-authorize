@@ -10,6 +10,7 @@ async function getProfileInGuilds(guildId: snowflake, accessToken: string) {
       )}`
     );
   }
+  
   const response = await request(
     "GET",
     `/users/@me/guilds/${guildId}/member`,
